@@ -12,7 +12,7 @@ jobs:
   deploy:
     name: Terraform Apply (OIDC)
     runs-on: ubuntu-latest
-    environment: production
+    environment: Secrets
     steps:
       - uses: actions/checkout@v4
 
