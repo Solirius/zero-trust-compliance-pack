@@ -61,7 +61,7 @@ resource "azurerm_monitor_action_group" "security" {
 
   name                = "ag-${var.project_name}-security"
   resource_group_name = var.resource_group_name
-  location            = var.location
+  location            = "global"
   short_name          = "SecAlerts"
   tags                = local.module_tags
 }

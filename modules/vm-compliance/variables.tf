@@ -33,9 +33,3 @@ variable "tags" {
   description = "Tags applied to all resources."
   default     = {}
 }
-
-variable "enable_guest_configuration" {
-  type        = bool
-  description = "Enable Azure Policy guest configuration assignments for VM OS hardening."
-  default     = true
-}

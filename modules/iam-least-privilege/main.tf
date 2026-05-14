@@ -45,7 +45,6 @@ resource "azurerm_role_definition" "workload_operator" {
     ]
 
     data_actions = [
-      "Microsoft.KeyVault/vaults/secrets/getSecret/action",
       "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
       "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write",
     ]
