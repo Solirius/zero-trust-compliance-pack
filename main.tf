@@ -84,3 +84,10 @@ module "vm_compliance" {
   resource_group_name = azurerm_resource_group.main.name
   tags                = local.common_tags
 }
+
+# --- State Moves ---
+
+moved {
+  from = module.secrets_rotation
+  to   = module.secrets_rotation[0]
+}
