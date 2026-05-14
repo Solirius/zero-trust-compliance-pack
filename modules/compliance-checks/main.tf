@@ -61,6 +61,7 @@ resource "azurerm_monitor_action_group" "security" {
 
   name                = "ag-${var.project_name}-security"
   resource_group_name = var.resource_group_name
+  location            = var.location
   short_name          = "SecAlerts"
   tags                = local.module_tags
 }
@@ -71,6 +72,7 @@ resource "azurerm_monitor_activity_log_alert" "policy_change" {
 
   name                = "alert-policy-change-${var.project_name}"
   resource_group_name = var.resource_group_name
+  location            = var.location
   scopes              = [local.scope]
   description         = "SOC2 CC8.1: Alert on Azure Policy assignment changes."
 
@@ -92,6 +94,7 @@ resource "azurerm_monitor_activity_log_alert" "role_change" {
 
   name                = "alert-role-change-${var.project_name}"
   resource_group_name = var.resource_group_name
+  location            = var.location
   scopes              = [local.scope]
   description         = "SOC2 CC7.1: Alert on RBAC role assignment changes."
 
@@ -113,6 +116,7 @@ resource "azurerm_monitor_activity_log_alert" "kv_access" {
 
   name                = "alert-kv-access-${var.project_name}"
   resource_group_name = var.resource_group_name
+  location            = var.location
   scopes              = [local.scope]
   description         = "SOC2 CC7.2: Alert on Key Vault configuration changes."
 
