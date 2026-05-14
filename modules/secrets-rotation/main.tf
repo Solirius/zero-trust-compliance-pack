@@ -72,6 +72,8 @@ resource "azurerm_key_vault_key" "example" {
     "wrapKey",
   ]
 
+  expiration_date = timeadd(timestamp(), "${90 * 24}h")
+
   rotation_policy {
     automatic {
       time_before_expiry = "P30D"
@@ -80,18 +82,8 @@ resource "azurerm_key_vault_key" "example" {
     expire_after         = "P90D"
     notify_before_expiry = "P29D"
   }
-}
-resource "random_password" "example" {
-  length  = 32
-  special = true
-}
-
-resource "azurerm_key_vault_secret" "example" {
-  name         = "example-rotated-secret"
-  value        = random_password.example.result
-  key_vault_id = azurerm_key_vault.main.id
 
   lifecycle {
-    ignore_changes = [value]
+    ignore_changes = [expiration_date]
   }
 }

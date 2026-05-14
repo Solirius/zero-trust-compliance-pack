@@ -21,6 +21,8 @@ resource "azurerm_key_vault_key" "cmk" {
     "wrapKey",
   ]
 
+  expiration_date = timeadd(timestamp(), "${365 * 24}h")
+
   rotation_policy {
     automatic {
       time_before_expiry = "P30D"
@@ -31,6 +33,10 @@ resource "azurerm_key_vault_key" "cmk" {
   }
 
   tags = local.module_tags
+
+  lifecycle {
+    ignore_changes = [expiration_date]
+  }
 }
 
 resource "azurerm_storage_account" "secure_storage" {
@@ -38,15 +44,28 @@ resource "azurerm_storage_account" "secure_storage" {
   resource_group_name      = var.resource_group_name
   location                 = var.location
   account_tier             = "Standard"
-  account_replication_type = "LRS"
+  account_replication_type = "GRS"
 
   https_traffic_only_enabled      = true
   min_tls_version                 = "TLS1_2"
   allow_nested_items_to_be_public = false
   shared_access_key_enabled       = false # Force Azure AD auth
+  public_network_access_enabled   = true  # Required for OIDC runner access; firewall enforces zero-trust
 
   identity {
     type = "SystemAssigned"
+  }
+
+  blob_properties {
+    versioning_enabled = true
+
+    delete_retention_policy {
+      days = 7
+    }
+
+    container_delete_retention_policy {
+      days = 7
+    }
   }
 
   tags = local.module_tags
