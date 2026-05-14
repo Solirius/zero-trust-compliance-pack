@@ -3,6 +3,12 @@ data "azurerm_client_config" "current" {}
 locals {
   create_law = var.log_analytics_workspace_id == null
   law_id     = local.create_law ? azurerm_log_analytics_workspace.main[0].id : var.log_analytics_workspace_id
+
+  module_tags = merge(var.tags, {
+    managed_by  = "terraform"
+    module_name = "secrets-rotation"
+    environment = var.environment
+  })
 }
 
 resource "azurerm_log_analytics_workspace" "main" {
@@ -12,7 +18,7 @@ resource "azurerm_log_analytics_workspace" "main" {
   resource_group_name = var.resource_group_name
   sku                 = "PerGB2018"
   retention_in_days   = 30
-  tags                = var.tags
+  tags                = local.module_tags
 }
 
 resource "azurerm_key_vault" "main" {
@@ -32,7 +38,7 @@ resource "azurerm_key_vault" "main" {
     ip_rules       = var.allowed_ips
   }
 
-  tags = var.tags
+  tags = local.module_tags
 }
 
 resource "azurerm_monitor_diagnostic_setting" "kv_audit" {

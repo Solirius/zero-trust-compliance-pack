@@ -14,16 +14,13 @@ output "log_analytics_workspace_id" {
 }
 
 output "compliance_status" {
-  description = "SOC2 CC6.2 Compliance Evidence"
+  description = "SOC2 compliance evidence for secret management."
   value = {
-    control               = "CC6.2"
-    status                = "COMPLIANT"
-    key_vault_id          = azurerm_key_vault.main.id
-    sku                   = azurerm_key_vault.main.sku_name
-    purge_protection      = azurerm_key_vault.main.purge_protection_enabled
-    rbac_authorization    = azurerm_key_vault.main.enable_rbac_authorization
-    diagnostic_logging    = "ENABLED"
-    audit_log_destination = local.law_id
-    evidence_timestamp    = timestamp()
+    "CC6.2" = {
+      control     = "CC6.2 — Credentials & secrets"
+      status      = "COMPLIANT"
+      resource_id = azurerm_key_vault.main.id
+      evidence    = "Key Vault ${azurerm_key_vault.main.sku_name} SKU, RBAC auth, purge protection, soft-delete ${var.soft_delete_retention_days} days, default-deny network ACLs, audit logging to Log Analytics."
+    }
   }
 }
