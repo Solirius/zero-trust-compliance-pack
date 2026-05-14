@@ -69,3 +69,16 @@ module "compliance_checks" {
   tags                = local.common_tags
   key_vault_id        = var.enable_secrets_rotation ? module.secrets_rotation[0].key_vault_id : null
 }
+
+# --- Module E: VM Compliance (CIS Level 1) ---
+
+module "vm_compliance" {
+  count  = var.enable_vm_compliance ? 1 : 0
+  source = "./modules/vm-compliance"
+
+  project_name        = var.project_name
+  environment         = var.environment
+  location            = var.location
+  resource_group_name = azurerm_resource_group.main.name
+  tags                = local.common_tags
+}

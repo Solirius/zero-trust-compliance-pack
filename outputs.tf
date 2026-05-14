@@ -5,6 +5,7 @@ output "compliance_report" {
     var.enable_iam_least_privilege ? module.iam_least_privilege[0].compliance_status : {},
     var.enable_kms_encryption ? module.kms_encryption[0].compliance_status : {},
     var.enable_compliance_checks ? module.compliance_checks[0].compliance_status : {},
+    var.enable_vm_compliance ? module.vm_compliance[0].compliance_status : {},
   )
 }
 
@@ -16,12 +17,14 @@ output "compliance_summary" {
       var.enable_iam_least_privilege ? module.iam_least_privilege[0].compliance_status : {},
       var.enable_kms_encryption ? module.kms_encryption[0].compliance_status : {},
       var.enable_compliance_checks ? module.compliance_checks[0].compliance_status : {},
+      var.enable_vm_compliance ? module.vm_compliance[0].compliance_status : {},
     )))
     modules_enabled = {
       secrets_rotation    = var.enable_secrets_rotation
       iam_least_privilege = var.enable_iam_least_privilege
       kms_encryption      = var.enable_kms_encryption
       compliance_checks   = var.enable_compliance_checks
+      vm_compliance       = var.enable_vm_compliance
     }
   }
 }
