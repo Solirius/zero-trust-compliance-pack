@@ -34,7 +34,7 @@ resource "azurerm_key_vault_key" "cmk" {
 }
 
 resource "azurerm_storage_account" "secure_storage" {
-  name                     = "st${var.project_name}${var.environment}"
+  name                     = "st${replace(var.project_name, "-", "")}${var.environment}"
   resource_group_name      = var.resource_group_name
   location                 = var.location
   account_tier             = "Standard"

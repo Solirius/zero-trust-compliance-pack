@@ -81,17 +81,17 @@ resource "azurerm_key_vault_key" "example" {
     notify_before_expiry = "P29D"
   }
 }
+resource "random_password" "example" {
+  length  = 32
+  special = true
+}
+
 resource "azurerm_key_vault_secret" "example" {
   name         = "example-rotated-secret"
-  value        = "initial-value"
+  value        = random_password.example.result
   key_vault_id = azurerm_key_vault.main.id
 
-  # Secret rotation policy (Requires API 2021-10-01+)
-  # Note: Rotation policy for secrets is actually supported in azurerm 3.0+
-  # but it's often done via a separate resource or lifecycle.
-  # Actually, azurerm_key_vault_secret doesn't have a nested rotation block.
-  # It's usually managed via azurerm_key_vault_managed_storage_account or custom logic.
-  # Wait, for KEYS there is azurerm_key_vault_key rotation_policy.
-  # For SECRETS, it's often an Event Grid + Function approach.
-  # However, the requirement says "Secret rotation policy configured".
+  lifecycle {
+    ignore_changes = [value]
+  }
 }

@@ -1,11 +1,21 @@
 variable "project_name" {
   description = "Project name"
   type        = string
+
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9-]{2,23}$", var.project_name))
+    error_message = "Project name must be 3-24 lowercase alphanumeric chars or hyphens, starting with a letter."
+  }
 }
 
 variable "environment" {
   description = "Environment name"
   type        = string
+
+  validation {
+    condition     = contains(["dev", "staging", "production"], var.environment)
+    error_message = "Environment must be one of: dev, staging, production."
+  }
 }
 
 variable "location" {
