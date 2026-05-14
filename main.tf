@@ -54,6 +54,7 @@ module "kms_encryption" {
   resource_group_name = azurerm_resource_group.main.name
   key_vault_id        = var.enable_secrets_rotation ? module.secrets_rotation[0].key_vault_id : null
   tags                = local.common_tags
+  allowed_ips         = var.allowed_ips
 }
 
 # --- Module D: Compliance Checks ---

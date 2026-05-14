@@ -34,8 +34,12 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
+      - name: Get runner IP
+        id: ip
+        run: echo "ip=$(curl -s https://api.ipify.org)" >> $GITHUB_OUTPUT
+
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
+        run: terraform plan -out=tfplan -var="allowed_ips=[\"${{ steps.ip.outputs.ip }}/32\"]"
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan

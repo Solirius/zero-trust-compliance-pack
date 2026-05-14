@@ -50,6 +50,12 @@ resource "azurerm_storage_account" "secure_storage" {
   }
 
   tags = local.module_tags
+
+  network_rules {
+    default_action = "Deny"
+    bypass         = ["AzureServices"]
+    ip_rules       = var.allowed_ips
+  }
 }
 
 resource "azurerm_role_assignment" "storage_kv_access" {

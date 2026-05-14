@@ -28,3 +28,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "allowed_ips" {
+  description = "List of IP addresses allowed to access the secure storage account"
+  type        = list(string)
+  default     = []
+}
