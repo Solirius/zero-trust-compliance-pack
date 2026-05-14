@@ -1,3 +1,11 @@
+locals {
+  module_tags = merge(var.tags, {
+    managed_by  = "terraform"
+    module_name = "kms-encryption"
+    environment = var.environment
+  })
+}
+
 resource "azurerm_key_vault_key" "cmk" {
   name         = "cmk-${var.project_name}-${var.environment}"
   key_vault_id = var.key_vault_id
@@ -21,6 +29,8 @@ resource "azurerm_key_vault_key" "cmk" {
     expire_after         = "P90D"
     notify_before_expiry = "P29D"
   }
+
+  tags = local.module_tags
 }
 
 resource "azurerm_storage_account" "secure_storage" {
@@ -39,7 +49,7 @@ resource "azurerm_storage_account" "secure_storage" {
     type = "SystemAssigned"
   }
 
-  tags = var.tags
+  tags = local.module_tags
 }
 
 resource "azurerm_role_assignment" "storage_kv_access" {
@@ -66,7 +76,7 @@ resource "azurerm_disk_encryption_set" "main" {
     type = "SystemAssigned"
   }
 
-  tags = var.tags
+  tags = local.module_tags
 }
 
 resource "azurerm_role_assignment" "des_kv_access" {
