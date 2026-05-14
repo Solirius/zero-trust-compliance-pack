@@ -1,144 +1,242 @@
-README.md
-# Zero-Trust Compliance Pack — Execution Guide Index
+# Zero-Trust Secrets & Compliance Pack
 
-> **Team:** Ayo (Principal), Owen, Philip Afrane
-> **Duration:** 5 hours
-> **Repo:** GitHub (OIDC to Azure, branch protection, CI/CD)
+> **One `terraform apply`. Instant SOC2 compliance. Zero stored credentials.**
+
+A drop-in Terraform module that deploys zero-trust security into any Azure landing zone in under 5 minutes — secret rotation, least-privilege IAM, encryption-at-rest, and SOC2 compliance evidence. Built to military-grade standards.
 
 ---
 
-## Quick Reference: Who Does What
+## The Problem
 
-```
-HOUR  AYO (Principal)              OWEN                         PHILIP AFRANE
-──────────────────────────────────────────────────────────────────────────────────
-0:00  Module 0: Bootstrap          Module 1: secrets-rotation   Module 2: iam-least-privilege
-      (Azure, TF, GitHub, OIDC)    (write locally)              (write locally)
+Every client landing zone deployment requires the same security scaffolding: secret rotation, least-privilege IAM, encryption-at-rest, and compliance evidence. Today this is **1–2 weeks of manual Terraform work per engagement**, with inconsistent implementation across teams. Controls are often incomplete, and compliance evidence is generated retroactively during audit prep.
 
-0:30  Module 3: Root wiring        Module 1: apply + iterate    Module 2: apply + iterate
+## The Solution
 
-1:30  Integrate P0 modules         Module 4: kms-encryption     Module 5: compliance-checks
-      Review + merge PRs           (P1)                         (P1)
+```hcl
+module "zero_trust" {
+  source = "github.com/Solirius/zero-trust-compliance-pack"
 
-2:30  Integrate P1 modules         PR kms-encryption            PR compliance-checks
-
-3:30  ── INTEGRATION CHECKPOINT ─────────────────────────────────────────────────
-      Full terraform apply         Fix issues                   Fix issues
-
-4:15  ── DEMO PREP ──────────────────────────────────────────────────────────────
-      Demo script rehearsal        Verify secrets + encryption  Verify policies + alerts
-
-4:45  ── DEMO ───────────────────────────────────────────────────────────────────
-      Present                      Support                      Support
+  environment         = "production"
+  project_name        = "my-landing-zone"
+  resource_group_name = azurerm_resource_group.main.name
+}
 ```
 
----
-
-## Module Guides
-
-Read YOUR module guide. Each is self-contained with full code, commands, and verification checklists.
-
-### Ayo's Modules
-
-| # | Module | Guide | Priority | Time |
-|---|---|---|---|---|
-| 0 | [Environment Bootstrap](./00-environment-bootstrap.md) | Azure sub, TF backend, GitHub repo, OIDC | P0 | 0:00–0:30 |
-| 3 | [Root Module Wiring](./03-root-module-wiring.md) | Integrate all sub-modules, aggregated compliance output | P0 | 0:30–3:30 |
-
-### Owen's Modules
-
-| # | Module | Guide | Priority | Time |
-|---|---|---|---|---|
-| 1 | [Secrets Rotation](./01-secrets-rotation.md) | Key Vault, secret rotation, audit logging | P0 | 0:00–1:30 |
-| 4 | [KMS Encryption](./04-kms-encryption.md) | CMK, storage encryption, disk encryption set | P1 | 1:30–2:30 |
-
-### Philip's Modules
-
-| # | Module | Guide | Priority | Time |
-|---|---|---|---|---|
-| 2 | [IAM Least-Privilege](./02-iam-least-privilege.md) | Custom RBAC roles, zero wildcards, deny assignments | P0 | 0:00–1:30 |
-| 5 | [Compliance Checks](./05-compliance-checks.md) | Azure Policy initiative, activity log alerts, SOC2 dashboard | P1 | 1:30–2:30 |
+That's it. One module call. Everything below is automated.
 
 ---
 
-## SOC2 Control Coverage
+## What Gets Deployed
 
-| Control | Description | Module | Owner |
-|---|---|---|---|
-| CC6.1 | Logical access security | `iam-least-privilege` + `compliance-checks` | Philip |
-| CC6.2 | Credentials & secrets | `secrets-rotation` + `compliance-checks` | Owen + Philip |
-| CC6.3 | Restrict unauthorized access | `iam-least-privilege` | Philip |
-| CC6.6 | Encryption in transit | `kms-encryption` + `compliance-checks` | Owen + Philip |
-| CC6.7 | Encryption at rest | `kms-encryption` + `compliance-checks` | Owen + Philip |
-| CC7.1 | Monitoring & detection | `compliance-checks` | Philip |
-| CC7.2 | Anomaly detection | `compliance-checks` | Philip |
-| CC8.1 | Change management | `compliance-checks` | Philip |
-
----
-
-## Critical Checkpoints
-
-| Time | Gate | If Failing |
+| Module | What It Does | SOC2 Controls |
 |---|---|---|
-| **0:30** | Bootstrap complete? | Ayo continues. Owen + Philip write code but cannot apply. |
-| **1:30** | P0 modules working individually? | **DROP P1.** All three focus on P0. |
-| **3:30** | Full stack applies cleanly? | Disable broken P1 modules. Demo P0 only. |
-| **4:15** | Demo rehearsal passes? | Simplify script. Show `terraform plan` instead of live apply. |
+| **secrets-rotation** | Azure Key Vault (Premium/HSM), automated secret rotation, audit logging | CC6.2 |
+| **iam-least-privilege** | Custom RBAC roles with zero wildcards, deny assignments, scoped service principals | CC6.1, CC6.3 |
+| **kms-encryption** | Customer-managed RSA-4096 keys, encrypted storage, disk encryption set, TLS 1.2 | CC6.6, CC6.7 |
+| **compliance-checks** | Azure Policy initiative mapped to SOC2, activity log alerts, compliance dashboard | CC7.1, CC7.2, CC8.1 |
+
+### SOC2 Controls Covered
+
+| Control | Description | Automated Evidence |
+|---|---|---|
+| CC6.1 | Logical access security | Custom RBAC roles, zero wildcards, scoped to resource group |
+| CC6.2 | Credentials & secrets | Key Vault rotation policy, purge protection, audit logging |
+| CC6.3 | Restrict unauthorized access | `not_actions` deny blocks on dangerous operations |
+| CC6.6 | Encryption in transit | TLS 1.2 minimum, HTTPS-only, shared keys disabled |
+| CC6.7 | Encryption at rest | CMK RSA-4096, auto-rotation, storage + disk encryption |
+| CC7.1 | Monitoring & detection | Activity log alerts on RBAC and Key Vault changes |
+| CC7.2 | Anomaly detection | Key Vault configuration change alerts |
+| CC8.1 | Change management | Infrastructure-as-Code, policy drift detection alerts |
 
 ---
 
-## Git Workflow
+## Architecture
 
-```bash
-# Branch naming
-feature/secrets-rotation
-feature/iam-least-privilege
-feature/kms-encryption
-feature/compliance-checks
-feature/root-module
-
-# PR process
-1. Push branch
-2. CI runs: terraform fmt, validate, tfsec, checkov
-3. Request review from Ayo
-4. 1 approval required
-5. Merge to main
-
-# Commit signing
-git commit -S -m "feat: description"
+```
+zero-trust-compliance-pack/
+├── .github/
+│   ├── workflows/
+│   │   ├── validate.yml            # PR: fmt, validate, tfsec, checkov
+│   │   └── deploy.yml              # Main: OIDC → terraform apply
+│   ├── CODEOWNERS
+│   └── pull_request_template.md
+│
+├── main.tf                         # Root module — wires everything
+├── variables.tf                    # Top-level config
+├── outputs.tf                      # Aggregated compliance report
+├── versions.tf                     # Pinned provider versions
+├── backend.tf                      # Azure blob remote state
+│
+├── bootstrap/                      # One-time environment setup
+│   ├── main.tf
+│   └── init-environment.sh
+│
+├── modules/
+│   ├── secrets-rotation/           # Key Vault + rotation + logging
+│   ├── iam-least-privilege/        # Custom RBAC + deny assignments
+│   ├── kms-encryption/             # CMK + storage + disk encryption
+│   └── compliance-checks/          # Azure Policy + alerts
+│
+└── examples/
+    └── azure-landing-zone/         # Full working example
 ```
 
 ---
 
-## Emergency Procedures
+## Quick Start
 
-### Module breaks integration
+### Prerequisites
+
+- Azure subscription with **Contributor + User Access Administrator**
+- Terraform >= 1.5
+- Azure CLI: `az login` completed
+- GitHub CLI: `gh auth status` passing
+
+### 1. Bootstrap (first time only)
+
 ```bash
-# Disable the broken module and continue
+git clone https://github.com/Solirius/zero-trust-compliance-pack.git
+cd zero-trust-compliance-pack/bootstrap
+chmod +x init-environment.sh
+./init-environment.sh
+```
+
+### 2. Deploy
+
+```bash
+cd ..
+terraform init
+terraform plan -var="project_name=my-project"
+terraform apply -var="project_name=my-project"
+```
+
+### 3. Verify
+
+```bash
+# Compliance report
+terraform output -json compliance_report
+
+# Azure Portal
+# → Key Vault: secrets, purge protection, RBAC
+# → IAM: custom roles, zero wildcards
+# → Storage: CMK encryption, TLS 1.2
+# → Policy: compliance dashboard with SOC2 control names
+```
+
+---
+
+## Military-Grade Standards
+
+Every module in this pack enforces these non-negotiable requirements:
+
+### Zero-Trust Principles
+
+- **Never trust, always verify** — default-deny on all resources
+- **Least privilege** — no wildcards (`*`) in permissions, ever
+- **Assume breach** — encrypt everything, log everything, alert on anomalies
+- **No long-lived credentials** — OIDC for CI/CD, managed identities for workloads
+- **Defense in depth** — multiple independent security layers
+
+### Module Engineering Standards
+
+- ✅ Every variable has a `validation {}` block
+- ✅ Zero hardcoded values — everything parameterised
+- ✅ Secure defaults — most restrictive option is always the default
+- ✅ `sensitive = true` on all secret outputs
+- ✅ `compliance_status` output on every module for aggregation
+- ✅ Idempotent — `terraform apply` is safe to run repeatedly
+- ✅ Tagged — every resource carries `environment`, `project`, `managed_by`, `module_name`
+- ✅ README — usage, inputs, outputs, SOC2 controls covered
+
+### CI/CD Security
+
+- GitHub Actions OIDC to Azure — zero stored credentials
+- `tfsec` + `checkov` on every PR — misconfigurations blocked before merge
+- Branch protection — 1 review required, no force push, signed commits
+- CODEOWNERS — module owners must approve changes to their modules
+
+---
+
+## Module Toggles
+
+Each module can be enabled or disabled independently:
+
+```hcl
+module "zero_trust" {
+  source = "github.com/Solirius/zero-trust-compliance-pack"
+
+  project_name        = "my-project"
+  resource_group_name = "rg-workload"
+
+  # Toggle modules on/off
+  enable_secrets_rotation    = true
+  enable_iam_least_privilege = true
+  enable_kms_encryption      = true
+  enable_compliance_checks   = true
+}
+```
+
+Emergency disable a broken module without affecting others:
+
+```bash
 terraform apply -var="enable_kms_encryption=false"
 ```
 
-### Azure auth fails
+---
+
+## Compliance Report
+
+After `terraform apply`, the root module outputs an aggregated compliance report:
+
 ```bash
-# Re-authenticate
-az login
-az account set --subscription "<subscription-id>"
+terraform output -json compliance_report
 ```
 
-### Terraform state lock stuck
-```bash
-# Break the lock (ONLY if no one else is applying)
-terraform force-unlock <lock-id>
-```
-
-### Policy evaluation not showing
-```bash
-# Force policy scan
-az policy state trigger-scan --resource-group "rg-ztcp-workload" --no-wait
+```json
+{
+  "CC6.1": {
+    "control": "CC6.1 — Logical access security",
+    "status": "compliant",
+    "evidence": "Custom RBAC roles with zero wildcard permissions..."
+  },
+  "CC6.2": {
+    "control": "CC6.2 — Credentials & secrets",
+    "status": "compliant",
+    "evidence": "Key Vault with automated rotation policy..."
+  }
+}
 ```
 
 ---
 
-## PRD
+## Team
 
-Full product requirements: [zero-trust-secrets-compliance-pack.md](../prd/zero-trust-secrets-compliance-pack.md)
+| Person | Role | Modules |
+|---|---|---|
+| **Ayo** | Principal Engineer | Bootstrap, root wiring, integration, CI/CD |
+| **Owen** | Engineer | secrets-rotation, kms-encryption |
+| **Philip Afrane** | Engineer | iam-least-privilege, compliance-checks |
+
+---
+
+## Contributing
+
+1. Branch from `dev`: `git checkout -b feature/<module-name>`
+2. Follow the [module interface contract](#module-engineering-standards)
+3. Run locally: `terraform fmt && terraform validate && tfsec .`
+4. PR to `dev` — CI must pass, 1 approval required
+5. Use conventional commits: `feat:`, `fix:`, `chore:`
+
+---
+
+## Project Board
+
+[GitHub Project → Zero-Trust Secrets & Compliance Pack](https://github.com/orgs/Solirius/projects/11)
+
+32 issues across P0/P1/P2 priorities with execution guides per module.
+
+---
+
+## License
+
+Internal — Solirius Technology
