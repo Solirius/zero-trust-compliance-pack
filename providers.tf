@@ -31,7 +31,7 @@ provider "azurerm" {
       purge_soft_delete_on_destroy = false
     }
   }
-  use_oidc = true
+  use_oidc            = true
   storage_use_azuread = true
 }
 
