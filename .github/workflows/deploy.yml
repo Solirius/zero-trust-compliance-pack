@@ -48,7 +48,10 @@ jobs:
         run: terraform init
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan -var="allowed_ips=[\"${{ steps.ip.outputs.ip }}/32\"]"
+        run: |
+          terraform plan -out=tfplan \
+            -var="allowed_ips=[\"${{ steps.ip.outputs.ip }}/32\"]" \
+            -replace="module.iam_least_privilege[0].azurerm_role_definition.workload_operator"
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
