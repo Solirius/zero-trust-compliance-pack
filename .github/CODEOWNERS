@@ -1,0 +1,22 @@
+# Root module and infrastructure
+/*.tf                          @ayosolirius
+/bootstrap/                    @ayosolirius
+
+# CI/CD
+/.github/                      @ayosolirius
+
+# Secrets rotation
+/modules/secrets-rotation/     @owenorice
+
+# IAM least-privilege
+/modules/iam-least-privilege/  @philipafrane21
+
+# KMS encryption
+/modules/kms-encryption/       @owenorice
+
+# Compliance checks
+/modules/compliance-checks/    @philipafrane21
+
+# Examples and docs
+/examples/                     @ayosolirius
+/docs/                         @ayosolirius
