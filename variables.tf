@@ -60,6 +60,12 @@ variable "enable_compliance_checks" {
   default     = true
 }
 
+variable "enable_vm_compliance" {
+  type        = bool
+  description = "Enable the VM compliance (CIS Level 1 benchmark) module."
+  default     = true
+}
+
 # --- Secrets rotation config ---
 
 variable "allowed_ips" {
