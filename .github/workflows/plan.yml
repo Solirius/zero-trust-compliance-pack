@@ -32,17 +32,25 @@ jobs:
         with:
           terraform_version: "~> 1.5"
 
-      - name: Terraform Init
-        run: terraform init
-
       - name: Get runner IP
         id: ip
         run: echo "ip=$(curl -s https://api.ipify.org)" >> $GITHUB_OUTPUT
 
+      - name: Whitelist runner IP on Key Vault
+        run: |
+          KV_NAME=$(az keyvault list --query "[?starts_with(name, 'kv-')].name" -o tsv | head -1)
+          if [ -n "$KV_NAME" ]; then
+            echo "Adding ${{ steps.ip.outputs.ip }} to $KV_NAME firewall"
+            az keyvault network-rule add --name "$KV_NAME" --ip-address "${{ steps.ip.outputs.ip }}/32" || true
+            sleep 5
+          fi
+
+      - name: Terraform Init
+        run: terraform init
+
       - name: Terraform Plan
         id: plan
         run: terraform plan -no-color -var="allowed_ips=[\"${{ steps.ip.outputs.ip }}/32\"]" > plan.txt 2>&1 || true
-
 
       - name: Post Plan to PR
         uses: actions/github-script@v7
@@ -61,6 +69,15 @@ jobs:
               repo: context.repo.repo,
               body: body
             });
+
+      - name: Remove runner IP from Key Vault
+        if: always()
+        run: |
+          KV_NAME=$(az keyvault list --query "[?starts_with(name, 'kv-')].name" -o tsv | head -1)
+          if [ -n "$KV_NAME" ]; then
+            echo "Removing ${{ steps.ip.outputs.ip }} from $KV_NAME firewall"
+            az keyvault network-rule remove --name "$KV_NAME" --ip-address "${{ steps.ip.outputs.ip }}/32" || true
+          fi
 
       - name: Fail on Plan Error
         if: steps.plan.outcome == 'failure'

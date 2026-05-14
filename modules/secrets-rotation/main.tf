@@ -81,17 +81,3 @@ resource "azurerm_key_vault_key" "example" {
     notify_before_expiry = "P29D"
   }
 }
-resource "random_password" "example" {
-  length  = 32
-  special = true
-}
-
-resource "azurerm_key_vault_secret" "example" {
-  name         = "example-rotated-secret"
-  value        = random_password.example.result
-  key_vault_id = azurerm_key_vault.main.id
-
-  lifecycle {
-    ignore_changes = [value]
-  }
-}
