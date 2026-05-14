@@ -7,10 +7,10 @@ terraform {
     }
   }
   backend "azurerm" {
-    resource_group_name  = "rg-hackday-tfstate"
-    storage_account_name = "REPLACE_WITH_YOUR_OUTPUT_NAME" // replace var in prod, check init-environemnt for default ~~ Unique ID, use ./init-environment.sh to populate + execute initialisation correctly
+    resource_group_name  = "rg-terraform-state"
+    storage_account_name = "crawlerstate2f87fbf8"
     container_name       = "tfstate"
-    key                  = "crawler-platform.tfstate"
+    key                  = "zero-trust-compliance-pack.tfstate"
     use_oidc             = true
   }
 }
