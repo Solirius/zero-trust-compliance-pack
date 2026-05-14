@@ -30,7 +30,7 @@ resource "azurerm_key_vault" "main" {
   soft_delete_retention_days  = var.soft_delete_retention_days
   purge_protection_enabled    = true
   sku_name                    = var.key_vault_sku
-  enable_rbac_authorization   = true
+  rbac_authorization_enabled  = true
 
   network_acls {
     bypass         = "AzureServices"
@@ -50,9 +50,8 @@ resource "azurerm_monitor_diagnostic_setting" "kv_audit" {
     category = "AuditEvent"
   }
 
-  metric {
+  enabled_metric {
     category = "AllMetrics"
-    enabled  = true
   }
 }
 
