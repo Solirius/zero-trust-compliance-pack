@@ -40,6 +40,12 @@ variable "key_vault_id" {
   default     = null
 }
 
+variable "key_vault_enabled" {
+  type        = bool
+  description = "Whether Key Vault is enabled. Used for conditional alerting."
+  default     = true
+}
+
 variable "enable_activity_log_alerts" {
   type        = bool
   description = "Enable activity log alerts for security events."

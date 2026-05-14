@@ -54,7 +54,7 @@ resource "azurerm_storage_account" "secure_storage" {
   network_rules {
     default_action = "Deny"
     bypass         = ["AzureServices"]
-    ip_rules       = var.allowed_ips
+    ip_rules       = [for ip in var.allowed_ips : replace(ip, "/32", "")]
   }
 }
 

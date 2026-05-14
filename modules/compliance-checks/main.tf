@@ -112,7 +112,7 @@ resource "azurerm_monitor_activity_log_alert" "role_change" {
 
 # CC7.2 — Key Vault configuration changes
 resource "azurerm_monitor_activity_log_alert" "kv_access" {
-  count = var.enable_activity_log_alerts && var.key_vault_id != null ? 1 : 0
+  count = var.enable_activity_log_alerts && var.key_vault_enabled ? 1 : 0
 
   name                = "alert-kv-access-${var.project_name}"
   resource_group_name = var.resource_group_name

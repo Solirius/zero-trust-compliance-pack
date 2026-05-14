@@ -69,6 +69,7 @@ module "compliance_checks" {
   resource_group_name = azurerm_resource_group.main.name
   tags                = local.common_tags
   key_vault_id        = var.enable_secrets_rotation ? module.secrets_rotation[0].key_vault_id : null
+  key_vault_enabled   = var.enable_secrets_rotation
 }
 
 # --- Module E: VM Compliance (CIS Level 1) ---
