@@ -1,9 +1,3 @@
-resource "azurerm_resource_group" "main" {
-  name     = "rg-${var.project_name}-${var.environment}"
-  location = var.location
-  tags     = local.common_tags
-}
-
 locals {
   common_tags = merge(var.tags, {
     project     = var.project_name
@@ -11,6 +5,17 @@ locals {
     managed_by  = "terraform"
     pack        = "zero-trust-compliance"
   })
+}
+
+# --- Resource Group ---
+
+module "resource_group" {
+  source = "./modules/resource-group"
+
+  project_name = var.project_name
+  environment  = var.environment
+  location     = var.location
+  tags         = local.common_tags
 }
 
 # --- Module A: Secrets Rotation ---
@@ -22,7 +27,7 @@ module "secrets_rotation" {
   project_name        = var.project_name
   environment         = var.environment
   location            = var.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = module.resource_group.name
   tags                = local.common_tags
   allowed_ips         = var.allowed_ips
 }
@@ -36,7 +41,7 @@ module "iam_least_privilege" {
   project_name           = var.project_name
   environment            = var.environment
   location               = var.location
-  resource_group_name    = azurerm_resource_group.main.name
+  resource_group_name    = module.resource_group.name
   tags                   = local.common_tags
   workload_principal_ids = var.workload_principal_ids
   reader_principal_ids   = var.reader_principal_ids
@@ -51,7 +56,7 @@ module "kms_encryption" {
   project_name        = var.project_name
   environment         = var.environment
   location            = var.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = module.resource_group.name
   key_vault_id        = var.enable_secrets_rotation ? module.secrets_rotation[0].key_vault_id : null
   tags                = local.common_tags
   allowed_ips         = var.allowed_ips
@@ -66,7 +71,7 @@ module "compliance_checks" {
   project_name        = var.project_name
   environment         = var.environment
   location            = var.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = module.resource_group.name
   tags                = local.common_tags
   key_vault_id        = var.enable_secrets_rotation ? module.secrets_rotation[0].key_vault_id : null
   key_vault_enabled   = var.enable_secrets_rotation
@@ -81,13 +86,14 @@ module "vm_compliance" {
   project_name        = var.project_name
   environment         = var.environment
   location            = var.location
-  resource_group_name = azurerm_resource_group.main.name
+  resource_group_name = module.resource_group.name
   tags                = local.common_tags
 }
 
 # --- State Moves ---
-
+# Move the bare azurerm_resource_group resource into the new module.
+# This is a one-time migration — safe to remove once applied.
 moved {
-  from = module.secrets_rotation
-  to   = module.secrets_rotation[0]
+  from = azurerm_resource_group.main
+  to   = module.resource_group.azurerm_resource_group.this
 }
