@@ -24,8 +24,7 @@ resource "azurerm_role_definition" "workload_operator" {
   permissions {
     actions = [
       "Microsoft.KeyVault/vaults/secrets/read",
-      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
-      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write",
+      "Microsoft.Storage/storageAccounts/blobServices/containers/read",
       "Microsoft.Compute/virtualMachines/read",
       "Microsoft.Compute/virtualMachines/instanceView/read",
       "Microsoft.Insights/metrics/read",
@@ -46,7 +45,6 @@ resource "azurerm_role_definition" "workload_operator" {
     data_actions = [
       "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
       "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write",
-      "Microsoft.KeyVault/vaults/secrets/getSecret/action",
     ]
 
     not_data_actions = [
